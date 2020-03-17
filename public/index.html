@@ -91,6 +91,7 @@
   <body>
     <input id="pac-input" class="controls" type="text" placeholder="Search Box">
     <div id="map"></div>
+    <script src="https://www.promisejs.org/polyfills/promise-7.0.4.min.js"></script>
     <script>
       // This example adds a search box to a map, using the Google Place Autocomplete
       // feature. People can enter geographical searches. The search box will return a
@@ -143,6 +144,48 @@
           createMarker( covidLocations[i] );
         }
       }
+
+
+      // Retrieve Covid testing locations based on the user's zipcode
+      function retrieveCovidTestLocations( zipCode ) {
+
+        // Replace this with a call to a remote service that can find test locations
+        return new Promise(function (fulfill, reject) {
+
+          window.setTimeout( function()
+          {
+            var testCovidLocations = [{
+              locationName: "Test Location 1",
+              streetAddress: "111 Everett Ave #2c, Chelsea, MA 02150",
+              gpsLatLng: {lat: 42.394552, lng: -71.039241},
+              websiteUrl: "https://google.com",
+              notes: "",
+              hasTestsAvailable: true,
+              lastUpdated: new Date()
+            }, {
+              locationName: "Test Location 2",
+              streetAddress: "332 Hanover St, Boston, MA 02113",
+              gpsLatLng: {lat: 42.3646633, lng: -71.0537095},
+              websiteUrl: "https://google.com",
+              notes: "",
+              hasTestsAvailable: false,
+              lastUpdated: new Date()
+            }, {
+              locationName: "Test Location 3",
+              streetAddress: "70 Inner Belt Rd, Somerville, MA 02143",
+              gpsLatLng: {lat: 42.3767454, lng: -71.0802636},
+              websiteUrl: "https://google.com",
+              notes: "",
+              hasTestsAvailable: true,
+              lastUpdated: new Date()
+            }];
+
+            fulfill( testCovidLocations );
+          }, 1000 );
+
+        });
+      }
+
 
       function initAutocomplete() {
 
@@ -216,33 +259,10 @@
         //   map.fitBounds(bounds);
         // });
 
-        var testCovidLocations = [{
-          locationName: "Test Location 1",
-          streetAddress: "111 Everett Ave #2c, Chelsea, MA 02150",
-          gpsLatLng: {lat: 42.394552, lng: -71.039241},
-          websiteUrl: "https://google.com",
-          notes: "",
-          hasTestsAvailable: true,
-          lastUpdated: new Date()
-        }, {
-          locationName: "Test Location 2",
-          streetAddress: "332 Hanover St, Boston, MA 02113",
-          gpsLatLng: {lat: 42.3646633, lng: -71.0537095},
-          websiteUrl: "https://google.com",
-          notes: "",
-          hasTestsAvailable: false,
-          lastUpdated: new Date()
-        }, {
-          locationName: "Test Location 3",
-          streetAddress: "70 Inner Belt Rd, Somerville, MA 02143",
-          gpsLatLng: {lat: 42.3767454, lng: -71.0802636},
-          websiteUrl: "https://google.com",
-          notes: "",
-          hasTestsAvailable: true,
-          lastUpdated: new Date()
-        }];
-
-        createMarkersFromLocations( testCovidLocations, map );
+        retrieveCovidTestLocations( "02150" ).then( function(covidLocations) {
+          createMarkersFromLocations( covidLocations, map );
+        } );
+        
       }
 
     </script>
