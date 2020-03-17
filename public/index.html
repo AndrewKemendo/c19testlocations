@@ -92,6 +92,7 @@
     <input id="pac-input" class="controls" type="text" placeholder="Search Box">
     <div id="map"></div>
     <script src="https://www.promisejs.org/polyfills/promise-7.0.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
       // This example adds a search box to a map, using the Google Place Autocomplete
       // feature. People can enter geographical searches. The search box will return a
@@ -102,8 +103,14 @@
       // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
       var currentlyOpenInfoWindow = null;
+      var allMapMarkers = [];
 
       function createMarkersFromLocations( covidLocations, map ) {
+
+        // Remove any old map markers
+        allMapMarkers.forEach(function(marker) {
+          marker.setMap(null);
+        });
 
         if( !covidLocations )
           return;
@@ -139,6 +146,8 @@
               currentlyOpenInfoWindow = infoWindow;
               currentlyOpenInfoWindow.open(map, newMarker);
             });
+
+            allMapMarkers.push( newMarker );
           };
 
           createMarker( covidLocations[i] );
@@ -149,45 +158,32 @@
       // Retrieve Covid testing locations based on the user's zipcode
       function retrieveCovidTestLocations( zipCode ) {
 
-        // Replace this with a call to a remote service that can find test locations
-        return new Promise(function (fulfill, reject) {
+        // The endpoint returns an array of objects that look like this:
+        // {
+        //   locationName: "Test Location 1",
+        //   streetAddress: "111 Everett Ave #2c, Chelsea, MA 02150",
+        //   gpsLatLng: {lat: 42.394552, lng: -71.039241},
+        //   websiteUrl: "https://google.com",
+        //   notes: "",
+        //   hasTestsAvailable: true,
+        //   lastUpdated: new Date()
+        // }
 
-          window.setTimeout( function()
-          {
-            var testCovidLocations = [{
-              locationName: "Test Location 1",
-              streetAddress: "111 Everett Ave #2c, Chelsea, MA 02150",
-              gpsLatLng: {lat: 42.394552, lng: -71.039241},
-              websiteUrl: "https://google.com",
-              notes: "",
-              hasTestsAvailable: true,
-              lastUpdated: new Date()
-            }, {
-              locationName: "Test Location 2",
-              streetAddress: "332 Hanover St, Boston, MA 02113",
-              gpsLatLng: {lat: 42.3646633, lng: -71.0537095},
-              websiteUrl: "https://google.com",
-              notes: "",
-              hasTestsAvailable: false,
-              lastUpdated: new Date()
-            }, {
-              locationName: "Test Location 3",
-              streetAddress: "70 Inner Belt Rd, Somerville, MA 02143",
-              gpsLatLng: {lat: 42.3767454, lng: -71.0802636},
-              websiteUrl: "https://google.com",
-              notes: "",
-              hasTestsAvailable: true,
-              lastUpdated: new Date()
-            }];
-
-            fulfill( testCovidLocations );
-          }, 1000 );
-
-        });
+        return axios.get('https://us-central1-c19testlocations.cloudfunctions.net/getCovidLocations?zipCode=' + zipCode)
+          .then(function (response) {
+            // handle success
+            //console.log(response);
+            return response.data;
+          })
+          .catch(function (error) {
+            // handle error
+            console.log(error);
+            return null;
+          });
       }
 
 
-      function initAutocomplete() {
+      function onGoogleMapsLoaded() {
 
         var bostonLatLng = {lat: 42.3601, lng: -71.0589};
 
@@ -206,9 +202,6 @@
         map.addListener('bounds_changed', function() {
           searchBox.setBounds(map.getBounds());
         });
-
-        //GeoJSON
-        //map.data.loadGeoJson('google.json');
 
         var markers = [];
         // Listen for the event fired when the user selects a prediction and retrieve
@@ -266,7 +259,7 @@
       }
 
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkh5bmALY2hBn0DiHyJYFSXw7y0dp33qg&libraries=places&callback=initAutocomplete"
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkh5bmALY2hBn0DiHyJYFSXw7y0dp33qg&libraries=places&callback=onGoogleMapsLoaded"
          async defer></script>
   </body>
 
